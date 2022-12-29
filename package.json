@@ -1,0 +1,49 @@
+{
+    "name": "@easyfe/web-request",
+    "version": "1.0.0",
+    "description": "基于axios扩展的请求库，支持取消重复请求、请求节流、请求队列等待、请求重试，支持自定义拦截器",
+    "main": "lib/index.js",
+    "module": "lib/index.esm.js",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "LICENSE",
+        "CHANGELOG.md",
+        "README.md"
+    ],
+    "scripts": {
+        "start": "cross-env NODE_ENV=development rollup -w -c",
+        "build": "rimraf lib && cross-env NODE_ENV=production rollup -c",
+        "prepublish": "npm run build",
+        "lint": "eslint --fix --ext .js,.ts ./src"
+    },
+    "keywords": [
+        "请求重试",
+        "防抖节流",
+        "请求取消",
+        "axios",
+        "refresh token"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/core": "7.17.5",
+        "@babel/plugin-transform-runtime": "7.17.0",
+        "@babel/preset-env": "7.16.4",
+        "@babel/runtime-corejs3": "7.16.3",
+        "@rollup/plugin-babel": "5.3.0",
+        "@rollup/plugin-commonjs": "21.0.2",
+        "@rollup/plugin-json": "4.1.0",
+        "@rollup/plugin-node-resolve": "13.0.6",
+        "@syyfe/eslint-config-ts": "0.0.2",
+        "cross-env": "^7.0.3",
+        "rimraf": "^3.0.2",
+        "rollup": "2.60.1",
+        "rollup-plugin-terser": "7.0.2",
+        "rollup-plugin-typescript2": "0.31.1",
+        "typescript": "4.5.2"
+    },
+    "dependencies": {
+        "axios": "^0.24.0"
+    }
+}
