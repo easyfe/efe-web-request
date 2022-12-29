@@ -49,10 +49,10 @@ npm i -S @easyfe/web-request
 import { login } from "@/utils/tools/login";
 import { storage } from "@/utils/tools/storage";
 import uuid from "@/utils/tools/uuid";
-import SyyRequest from "@syy/request";
+import WebRequest from "@easyfe/web-request";
 
 import loading from "./loading";
-const service = new SyyRequest({
+const service = new WebRequest({
     //axios基础配置和支持的扩展配置
     base: {
         timeout: process.env.VUE_APP_MODE === "production" ? 15000 : 60000, //设置超时时间，生产环境15秒，其他环境60秒
