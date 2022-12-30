@@ -130,15 +130,11 @@ class SyyRequest {
                 Array.from(this.processQueue.values()).pop()?.config.wait !== true
             ) {
                 // console.log("进入process执行逻辑");
-                config.cancelToken = new cancelToken((c) => {
-                    // console.log("进入cancelToken回调", config);
-                    this._addQueue({
-                        key,
-                        queueType: "process",
-                        cancel: c,
-                        config: configWithKey,
-                        instance: instance()
-                    });
+                this._addQueue({
+                    key,
+                    queueType: "process",
+                    config: configWithKey,
+                    instance: instance()
                 });
             } else {
                 // console.log("进入pedding等待逻辑");
@@ -160,13 +156,14 @@ class SyyRequest {
         const checkFn = (queue: Map<symbol, QueueDetail>): Error | null => {
             for (const [key, item] of queue) {
                 if (item.config.url === config.url && item.config.method === config.method) {
+                    // console.log("======存在_queueAdopt====", item.config, item.cancel);
                     // 如果配置了节流，则拦截本次请求
                     if (config.throttle) {
                         return new Error("request:fail fast");
                     }
                     //如果配置了防抖，则取消重复请求
                     if (item.config.enableCancel && item.cancel) {
-                        item.cancel();
+                        item.cancel(JSON.stringify(item.config));
                         queue.delete(key);
                     }
                 }
@@ -270,6 +267,14 @@ class SyyRequest {
                     if (config.loading && !config.retryActiveCount) {
                         requestConfig.loading.showLoading();
                     }
+                    config.cancelToken = new cancelToken((c) => {
+                        const item =
+                            this.processQueue.get((config as AxiosRequestConfigWithKey).key) ||
+                            this.peddingQueue.get((config as AxiosRequestConfigWithKey).key);
+                        if (item) {
+                            item.cancel = c;
+                        }
+                    });
                     return config;
                 } catch (e) {
                     return Promise.reject(e);
