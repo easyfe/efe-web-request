@@ -260,7 +260,7 @@ class SyyRequest {
                     await requestConfig.interceptors.request(config);
                     /** 请求前缀配置 */
                     if (config.prefix !== undefined && !config.retryActiveCount) {
-                        config.baseUrl = `${config.baseUrl}${config.prefix}`;
+                        config.baseURL = `${config.baseURL}${config.prefix.startsWith("/") ? '' : '/'}${config.prefix}`;
                     }
                     /** 如果配置了loading */
                     if (config.loading && !config.retryActiveCount) {
