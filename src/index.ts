@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosPromise, AxiosRequestConfig, AxiosResponse, Canceler } from "axios";
+import { cloneDeep, genrateNanoid } from "./util";
 
 declare module "axios" {
     interface AxiosRequestConfig {
@@ -24,6 +25,10 @@ declare module "axios" {
         prefix?: string;
         /**请求并发数 */
         maxQueue?: number;
+        /**GET请求唯一标识 */
+        randomKey?: string;
+        /**是否合并请求（默认关闭），开启后，多个相同请求会合并成一个请求*/
+        merge?: boolean;
     }
 }
 
@@ -54,7 +59,7 @@ const httpStatus: { [key: number]: string } = {
 //取消请求
 const cancelToken = axios.CancelToken;
 
-class SyyRequest {
+class WebRequest {
     /** 请求配置 */
     private baseRequestConfig: AxiosRequestConfig | null = null;
     /** 请求MAP */
@@ -87,9 +92,13 @@ class SyyRequest {
      * @param throttle 是否开启节流（默认关闭），开启后同一个请求需要排队
      * @param enableCancel 是否允许主动取消请求（默认开启），允许后，可以实现队列功能，默认返回最后一个请求结果
      * @param wait 是否开启请求等待（默认关闭），开启后，其他请求会等待当前请求结束之后，进行请求
+     * @param prefix 接口前缀
+     * @param maxQueue 请求并发数
+     * @param randomKey GET请求唯一标识
+     * @param merge 是否合并请求（默认关闭），开启后，多个相同请求会合并成一个请求
      */
     request = (config: AxiosRequestConfig): Promise<any> => {
-        // console.log("=====request======", JSON.stringify(config));
+        // console.log("=====进入request======", JSON.stringify(config));
         return this.decoratorRequest(config);
     };
     /**
@@ -101,7 +110,7 @@ class SyyRequest {
         return new Promise((resolve, reject) => {
             const key = Symbol("requestid");
             const configWithKey = { ...config, key };
-            const instance = (): any => {
+            const instance = (): Promise<any> => {
                 return this.service(configWithKey)
                     .then((res) => {
                         resolve(res);
@@ -117,8 +126,16 @@ class SyyRequest {
             };
 
             const adoptRes = this._queueAdopt(configWithKey);
-            if (adoptRes) {
+            if (adoptRes instanceof Error) {
                 reject(adoptRes);
+                return;
+            }
+            if (adoptRes instanceof Promise) {
+                adoptRes.then((r) => {
+                    console.log(r);
+                });
+                console.log("相同的请求", adoptRes, typeof adoptRes);
+                resolve("test");
                 return;
             }
             // console.log("并发限制：", config.maxQueue ?? this.baseRequestConfig?.maxQueue);
@@ -152,8 +169,9 @@ class SyyRequest {
      * @param config
      * @returns
      */
-    private _queueAdopt(config: AxiosRequestConfigWithKey): Error | null {
-        const checkFn = (queue: Map<symbol, QueueDetail>): Error | null => {
+    private _queueAdopt(config: AxiosRequestConfigWithKey) {
+        // console.log("进入_queueAdopt====", config);
+        const checkFn = (queue: Map<symbol, QueueDetail>): Error | null | QueueInstance => {
             for (const [key, item] of queue) {
                 if (item.config.url === config.url && item.config.method === config.method) {
                     // console.log("======存在_queueAdopt====", item.config, item.cancel);
@@ -161,10 +179,27 @@ class SyyRequest {
                     if (config.throttle) {
                         return new Error("request:fail fast");
                     }
-                    //如果配置了防抖，则取消重复请求
-                    if (item.config.enableCancel && item.cancel) {
-                        item.cancel(JSON.stringify(item.config));
-                        queue.delete(key);
+                    //仅在get模式下，允许取消请求
+                    const method = item.config.method?.toLocaleUpperCase() || "GET";
+                    if (method === "GET") {
+                        //如果允许合并请求
+                        if (this.baseRequestConfig?.merge || config.merge) {
+                            const v1 = cloneDeep(item.config.params);
+                            const v2 = cloneDeep(config.params);
+                            item.config.randomKey && delete v1[item.config.randomKey];
+                            config.randomKey && delete v2[config.randomKey];
+                            //如果存在完全相同get请求，则返回上一个请求结果
+                            if (JSON.stringify(v1) === JSON.stringify(v2)) {
+                                // console.log(item.config.promise, "===========");
+                                console.warn("完全相同请求，返回上一个请求结果", item.config.url);
+                                return item.instance;
+                            }
+                        }
+                        //如果配置了防抖，则取消重复请求
+                        if (item.config.enableCancel && item.cancel) {
+                            item.cancel(JSON.stringify(item.config));
+                            queue.delete(key);
+                        }
                     }
                 }
             }
@@ -256,11 +291,19 @@ class SyyRequest {
         this.service.interceptors.request.use(
             async (config) => {
                 try {
+                    // console.log("========进入请求拦截器===========", config);
                     /** 自定义请求拦截器 */
                     await requestConfig.interceptors.request(config);
                     /** 请求前缀配置 */
                     if (config.prefix !== undefined && !config.retryActiveCount) {
-                        config.baseURL = `${config.baseURL}${config.prefix.startsWith("/") ? '' : '/'}${config.prefix}`;
+                        config.baseURL = `${config.baseURL}${config.prefix.startsWith("/") ? "" : "/"}${config.prefix}`;
+                    }
+                    /** 随机数配置 */
+                    if (config.randomKey && config.method?.toLocaleUpperCase() === "GET") {
+                        if (!config.params) {
+                            config.params = {};
+                        }
+                        config.params[config.randomKey] = genrateNanoid();
                     }
                     /** 如果配置了loading */
                     if (config.loading && !config.retryActiveCount) {
@@ -423,4 +466,4 @@ class SyyRequest {
     }
 }
 
-export default SyyRequest;
+export default WebRequest;

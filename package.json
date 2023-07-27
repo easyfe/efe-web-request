@@ -1,5 +1,5 @@
 {
-    "name": "@easyfe/web-request",
+    "name": "@easyfe/web-request-test",
     "version": "1.0.0",
     "description": "基于axios扩展的请求库，支持取消重复请求、请求节流、请求队列等待、请求重试，支持自定义拦截器",
     "main": "lib/index.js",
@@ -44,6 +44,7 @@
         "typescript": "4.5.2"
     },
     "dependencies": {
-        "axios": "^0.24.0"
+        "axios": "^0.24.0",
+        "nanoid": "^4.0.2"
     }
 }
