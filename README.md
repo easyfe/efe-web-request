@@ -81,9 +81,8 @@ const service = new WebRequest({
             }
             return config;
         },
-        //200状态码拦截器，需要补充实现message定义
+        //200状态码拦截器
         response: (response): Promise<any> => {
-            response.data.message = response.data.msg;
             if (response.data.code !== 200) {
                 //失败情况下，完整返回response，可以对config等数据进行修改
                 return Promise.reject(response);
@@ -92,9 +91,8 @@ const service = new WebRequest({
                 return Promise.resolve(response.data.data);
             }
         },
-        //非200状态码拦截器，需要补充实现message定义
+        //非200状态码拦截器
         responseError: (errorResponse): Promise<any> => {
-            errorResponse.data.message = errorResponse.data.msg;
             return Promise.reject(errorResponse);
         }
     }
@@ -115,9 +113,9 @@ export default request;
 import { Toast } from "vant";
 let reqNum = 0;
 const loading = {
-    showToast(message: string): void {
+    showToast(err): void {
         Toast({
-            message
+            message: err.message || err.errMsg || err.msg || String(err)
         });
     },
     showLoading(): void {

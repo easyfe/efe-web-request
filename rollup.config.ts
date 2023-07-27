@@ -56,5 +56,5 @@ export default {
         isProdEnv && terser()
     ],
     // 排除node_modules
-    external: [/node_modules/]
+    external: ["axios"]
 };

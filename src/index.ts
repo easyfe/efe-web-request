@@ -236,7 +236,7 @@ class SyyRequest {
         loading: {
             showLoading: () => void;
             clearLoading: () => void | Promise<any>;
-            showToast: (e: string) => void;
+            showToast: (e: string | Record<string, any>) => void;
             clearToast: () => void;
         };
         /** 拦截器 */
@@ -259,9 +259,8 @@ class SyyRequest {
                     /** 自定义请求拦截器 */
                     await requestConfig.interceptors.request(config);
                     /** 请求前缀配置 */
-                    //TODO:如果域名包含前缀名称，会有问题，比如api.baidu.com，前缀是api，则不会拼上
-                    if (config.prefix !== undefined && !config.baseURL?.includes(config.prefix)) {
-                        config.baseURL = `${config.baseURL}${config.prefix}`;
+                    if (config.prefix !== undefined && !config.retryActiveCount) {
+                        config.baseUrl = `${config.baseUrl}${config.prefix}`;
                     }
                     /** 如果配置了loading */
                     if (config.loading && !config.retryActiveCount) {
@@ -349,7 +348,7 @@ class SyyRequest {
                         // 开启节流，请求过快
                         return Promise.reject(new Error("请求过快，已拦截"));
                     } else {
-                        requestConfig.loading.showToast(error?.message || error + "");
+                        requestConfig.loading.showToast(error);
                         return Promise.reject(error?.message || error + "" || "未知错误");
                     }
                 }
@@ -406,14 +405,14 @@ class SyyRequest {
                 return Promise.reject(response.data);
             }
             //进行全局错误提示
-            if (response.data.message) {
+            if (response.data) {
                 //如果后端返回了具体错误内容
-                requestConfig.loading.showToast(response.data.message);
+                requestConfig.loading.showToast(response.data);
                 return Promise.reject(response.data);
             }
             if (response.status && httpStatus[response.status]) {
                 // 存在错误状态码
-                requestConfig.loading.showToast(httpStatus[response.status]);
+                requestConfig.loading.showToast({ message: httpStatus[response.status] });
                 return Promise.reject(response.data);
             }
             //如果没有具体错误内容，找后端
