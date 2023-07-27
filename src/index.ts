@@ -15,7 +15,7 @@ declare module "axios" {
         loading?: boolean;
         /**是否开启提示（默认开启）*/
         notify?: boolean;
-        /**是否允许主动取消请求（默认开启），允许后，可以实现队列功能，默认返回最后一个请求结果*/
+        /**是否允许主动取消请求（默认关闭），允许后，可以实现队列功能，默认返回最后一个请求结果*/
         enableCancel?: boolean;
         /**是否开启节流（默认关闭），开启后同一个请求需要排队*/
         throttle?: boolean;
@@ -90,7 +90,7 @@ class WebRequest {
      * @param loading 是否开启加载（默认关闭）
      * @param notify 是否开启提示（默认开启）
      * @param throttle 是否开启节流（默认关闭），开启后同一个请求需要排队
-     * @param enableCancel 是否允许主动取消请求（默认开启），允许后，可以实现队列功能，默认返回最后一个请求结果
+     * @param enableCancel 是否允许主动取消请求（默认关闭），允许后，可以实现队列功能，默认返回最后一个请求结果
      * @param wait 是否开启请求等待（默认关闭），开启后，其他请求会等待当前请求结束之后，进行请求
      * @param prefix 接口前缀
      * @param maxQueue 请求并发数
@@ -111,31 +111,30 @@ class WebRequest {
             const key = Symbol("requestid");
             const configWithKey = { ...config, key };
             const instance = (): Promise<any> => {
-                return this.service(configWithKey)
-                    .then((res) => {
-                        resolve(res);
-                    })
-                    .catch((err) => {
-                        reject(err);
-                    })
-                    .finally(() => {
-                        this.processQueue.delete(key);
-                        // console.log("删除执行中队列：", this.processQueue.size, [...this.processQueue.entries()]);
-                        this._addNextProcess();
-                    });
-            };
-
-            const adoptRes = this._queueAdopt(configWithKey);
-            if (adoptRes instanceof Error) {
-                reject(adoptRes);
-                return;
-            }
-            if (adoptRes instanceof Promise) {
-                adoptRes.then((r) => {
-                    console.log(r);
+                return new Promise((resolve, reject) => {
+                    this.service(configWithKey)
+                        .then((res) => {
+                            resolve(res);
+                        })
+                        .catch((err) => {
+                            reject(err);
+                        })
+                        .finally(() => {
+                            this.processQueue.delete(key);
+                            // console.log("删除执行中队列：", this.processQueue.size, [...this.processQueue.entries()]);
+                            this._addNextProcess();
+                        });
                 });
-                console.log("相同的请求", adoptRes, typeof adoptRes);
-                resolve("test");
+            };
+            const adoptRes = this._queueAdopt(configWithKey);
+            if (adoptRes) {
+                if (adoptRes instanceof Error) {
+                    reject(adoptRes);
+                } else if (adoptRes instanceof Promise) {
+                    resolve(adoptRes);
+                } else {
+                    resolve(adoptRes());
+                }
                 return;
             }
             // console.log("并发限制：", config.maxQueue ?? this.baseRequestConfig?.maxQueue);
@@ -183,15 +182,14 @@ class WebRequest {
                     const method = item.config.method?.toLocaleUpperCase() || "GET";
                     if (method === "GET") {
                         //如果允许合并请求
-                        if (this.baseRequestConfig?.merge || config.merge) {
+                        if (this.baseRequestConfig?.merge ?? config.merge ?? false) {
                             const v1 = cloneDeep(item.config.params);
                             const v2 = cloneDeep(config.params);
                             item.config.randomKey && delete v1[item.config.randomKey];
                             config.randomKey && delete v2[config.randomKey];
                             //如果存在完全相同get请求，则返回上一个请求结果
                             if (JSON.stringify(v1) === JSON.stringify(v2)) {
-                                // console.log(item.config.promise, "===========");
-                                console.warn("完全相同请求，返回上一个请求结果", item.config.url);
+                                console.warn("完全相同的请求，返回上一个请求结果", item.config.url);
                                 return item.instance;
                             }
                         }
@@ -253,10 +251,10 @@ class WebRequest {
                 method: data.config.method,
                 params: data.config.params,
                 data: data.config.data,
-                //默认允许取消请求
-                enableCancel: data.config.enableCancel ?? true,
+                //默认不允许取消请求
+                enableCancel: data.config.enableCancel ?? this.baseRequestConfig?.enableCancel ?? false,
                 //默认不开启等待
-                wait: data.config.wait ?? false
+                wait: data.config.wait ?? this.baseRequestConfig?.wait ?? false
             }
         });
     };

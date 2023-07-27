@@ -24,12 +24,13 @@
 | retryDelay   | 100    | 重试延迟，单位 毫秒                                          |
 | loading      | false  | 是否开启加载                                                 |
 | notify       | true   | 是否自动提示                                                 |
-| enableCancel | true   | 是否允许取消请求，在 app.vue 或者 main.ts 周期的请求，建议使用 false，开启后可实现防抖效果 |
+| enableCancel | false  | 是否允许取消请求，在 app.vue 或者 main.ts 周期的请求，建议使用 false，开启后可实现防抖效果 |
 | throttle     | false  | 是否开启节流，开启后同一个请求需要排队，主要用于重复提交表单的场景（比如订单提交） |
 | wait         | false  | 是否开启请求等待，开启后，其他请求会等待当前请求结束之后，进行请求（可用于登录或者 token 刷新） |
 | maxQueue     | 0      | 并发请求限制                                                 |
 | prefix       | -      | 请求前缀，一般用于接口版本（比如 v2）或者其他前缀情况        |
 | randomKey    | ""     | GET请求唯一标识                                              |
+| merge        | false  | 是否合并请求（默认关闭），开启后，多个相同请求会合并成一个请求 |
 
 返回事件：
 
@@ -61,7 +62,8 @@ const service = new WebRequest({
         prefix: "/v2",
         headers: {
             "app-type": "gzh"
-        }
+        },
+        randomKey: "_t",
     },
     //加载器实现
     loading,
@@ -73,12 +75,6 @@ const service = new WebRequest({
             const token = storage.getToken();
             if (token && config?.headers) {
                 config.headers["access-token"] = token;
-            }
-            if (config.method?.toLocaleUpperCase() === "GET") {
-                config.params = {
-                    ...config.params,
-                    _t: uuid()
-                };
             }
             return config;
         },
