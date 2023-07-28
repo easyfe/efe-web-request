@@ -111,13 +111,15 @@ class WebRequest {
             const key = Symbol("requestid");
             const configWithKey = { ...config, key };
             const instance = (): Promise<any> => {
-                return new Promise((resolve, reject) => {
+                return new Promise((r, j) => {
                     this.service(configWithKey)
                         .then((res) => {
                             resolve(res);
+                            r(res);
                         })
                         .catch((err) => {
                             reject(err);
+                            j(err);
                         })
                         .finally(() => {
                             this.processQueue.delete(key);
