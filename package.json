@@ -1,5 +1,5 @@
 {
-    "name": "@easyfe/web-request-test",
+    "name": "@easyfe/web-request",
     "version": "1.0.0",
     "description": "基于axios扩展的请求库，支持取消重复请求、请求节流、请求队列等待、请求重试，支持自定义拦截器",
     "main": "lib/index.js",
@@ -18,6 +18,7 @@
         "lint": "eslint --fix --ext .js,.ts ./src"
     },
     "keywords": [
+        "请求合并",
         "请求重试",
         "防抖节流",
         "请求取消",
