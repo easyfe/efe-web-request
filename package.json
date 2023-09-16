@@ -25,6 +25,7 @@
         "axios",
         "refresh token"
     ],
+    "repository": "https://github.com/easyfe/efe-web-request",
     "author": "",
     "license": "ISC",
     "devDependencies": {
