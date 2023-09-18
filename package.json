@@ -38,6 +38,7 @@
         "@rollup/plugin-json": "4.1.0",
         "@rollup/plugin-node-resolve": "13.0.6",
         "@syyfe/eslint-config-ts": "0.0.2",
+        "@types/node": "^20.6.2",
         "cross-env": "^7.0.3",
         "rimraf": "^3.0.2",
         "rollup": "2.60.1",

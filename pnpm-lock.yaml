@@ -40,6 +40,9 @@ devDependencies:
   '@syyfe/eslint-config-ts':
     specifier: 0.0.2
     version: 0.0.2(typescript@4.5.2)
+  '@types/node':
+    specifier: ^20.6.2
+    version: 20.6.2
   cross-env:
     specifier: ^7.0.3
     version: 7.0.3
@@ -1416,14 +1419,14 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: true
 
-  /@types/node@20.4.5:
-    resolution: {integrity: sha512-rt40Nk13II9JwQBdeYqmbn2Q6IVTA5uPhvSO+JVqdXw/6/4glI6oR9ezty/A9Hg5u7JH4OmYmuQ+XvjKm0Datg==}
+  /@types/node@20.6.2:
+    resolution: {integrity: sha512-Y+/1vGBHV/cYk6OI1Na/LHzwnlNCAfU3ZNGrc1LdRe/LAIbdDPTTv/HU3M7yXN448aTVDq3eKRm2cg7iKLb8gw==}
     dev: true
 
   /@types/resolve@1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 20.4.5
+      '@types/node': 20.6.2
     dev: true
 
   /@typescript-eslint/eslint-plugin@5.4.0(@typescript-eslint/parser@5.4.0)(eslint@7.32.0)(typescript@4.5.2):
@@ -2738,7 +2741,7 @@ packages:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.4.5
+      '@types/node': 20.6.2
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: true
@@ -3555,7 +3558,7 @@ packages:
   /upath2@3.1.19:
     resolution: {integrity: sha512-d23dQLi8nDWSRTIQwXtaYqMrHuca0As53fNiTLLFDmsGBbepsZepISaB2H1x45bDFN/n3Qw9bydvyZEacTrEWQ==}
     dependencies:
-      '@types/node': 20.4.5
+      '@types/node': 20.6.2
       path-is-network-drive: 1.0.20
       path-strip-sep: 1.0.17
       tslib: 2.2.0
