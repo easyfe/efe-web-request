@@ -47,7 +47,7 @@ export function cloneDeep<T extends Record<string, any>>(src: T, seen = new Map(
         for (const v of src) copy.add(cloneDeep(v, seen));
     } else if (src instanceof Object) {
         // Object
-        copy = {};
+        copy = {} as any;
         seen.set(src, copy);
         for (const [k, v] of Object.entries(src)) copy[k] = cloneDeep(v, seen);
     } else {

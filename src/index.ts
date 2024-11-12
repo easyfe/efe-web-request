@@ -29,6 +29,8 @@ declare module "axios" {
         randomKey?: string;
         /**是否合并请求（默认关闭），开启后，多个相同请求会合并成一个请求*/
         merge?: boolean;
+        /** 自定义响应处理函数 */
+        customResponseHandler?: (response: AxiosResponse) => any;
     }
 }
 
@@ -330,6 +332,10 @@ class WebRequest {
         this.service.interceptors.response.use(
             async (response): Promise<any> => {
                 try {
+                    // 如果存在自定义响应处理函数，则使用它处理响应
+                    if (response.config.customResponseHandler) {
+                        return response.config.customResponseHandler(response);
+                    }
                     //自定义响应拦截器
                     const res = await requestConfig.interceptors.response(response);
                     //关闭loading
