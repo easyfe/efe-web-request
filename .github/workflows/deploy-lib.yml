@@ -1,6 +1,7 @@
 name: Lib Deploy
 
 on:
+    workflow_dispatch:
     push:
         tags:
             - "*"
@@ -16,17 +17,20 @@ jobs:
             - run: npm i -g pnpm
             - run: pnpm install
 
+            - name: Get version
+              id: get_version
+              run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
             - name: Build
-              run: pnpm build
+              run: |
+                  sed -i "s/\"NPM_VERSION\": \"\",/\"version\": \"${{ steps.get_version.outputs.VERSION }}\",/" $(pwd)/package.json
+                  pnpm install
+                  pnpm build
 
             - name: Deploy Lib
               run: npm publish
               env:
                   NPM_TOKEN: ${{ secrets.EASYFE_NPM_TOKEN }}
-
-            - name: Get version
-              id: get_version
-              run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
             - name: Create Release
               uses: actions/create-release@v1
