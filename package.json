@@ -1,6 +1,6 @@
 {
     "name": "@easyfe/web-request",
-    "version": "1.0.1",
+    "NPM_VERSION": "",
     "description": "基于axios扩展的请求库，支持取消重复请求、请求节流、请求队列等待、请求重试，支持自定义拦截器",
     "main": "lib/index.js",
     "module": "lib/index.esm.js",
